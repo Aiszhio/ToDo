@@ -1,35 +1,37 @@
 
 <script>
 
-  export default {
-    name: 'Register',
+import home from './Components/HomePage.vue';
+import register from './Components/Reg.vue';
+
+export default {
+  components: {
+    home,
+    register,
+  },
+  methods:{
+    loadReg(){
+      this.$router.push('/register')
+    },
+    loadHome(){
+      this.$router.push('/')
+    }
   }
+};
 
 </script>
 
 <template>
-  <main>
-    <div id="asideInf">
-      <nav id="asideBut">
-        <p class="navText">Меню</p>
-        <hr class = "underNav">
-        <button class="navBut"> Главная </button>
-        <button class="navBut"> Личный кабинет </button>
-        <button class="navBut"> Заметки </button>
-        <button class="navBut"> Настройки </button>
-        <button class="navBut"> Помощь </button>
-      </nav>
-    </div>
-
-    <p class="greet">Добро пожаловать!</p>
-
-    <div id="buttons">
-      <button class="but1">
-        Регистрация
-      </button>
-      <button class="but2">
-        Вход
-      </button>
-    </div>
-  </main>
+  <div id="app">
+    <button class="but1" @click="loadReg()">
+      Регистрация
+    </button>
+    <button class="but2">
+      Вход
+    </button>
+    <button class="but3" @click="loadHome()">
+      Главная
+    </button>
+    <router-view></router-view>
+  </div>
 </template>
