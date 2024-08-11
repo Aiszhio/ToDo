@@ -10,27 +10,8 @@ main {
     margin: 0;
 }
 
-#asideInf {
-    border: 2px solid white;
-    border-radius: 10px;
-    background-color: white;
-    width: 15%;
-    height: 90vh;
-    margin-top: 3vh;
-    margin-left: 1vh;
-    align-content: start;
-}
-
-#asideBut{
-    height: 80%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-}
-
 .but1{
-    background-color: white;
+    background-color: #FFDAB9;
     color: black;
     border: white;
     font-size: large;
@@ -44,11 +25,12 @@ main {
     opacity: .8;
     text-decoration: none;
     border-radius: 10px;
-    background-color: lightgrey;
+    background-color: #e3a95e;
+    font-weight: bolder;
 }
 
 .but2{
-    background-color: white;
+    background-color: #FFDAB9;
     color: black;
     border: white;
     font-size: large;
@@ -62,11 +44,12 @@ main {
     opacity: .8;
     text-decoration: none;
     border-radius: 10px;
-    background-color: lightgrey;
+    background-color: #e3a95e;
+    font-weight: bolder;
 }
 
 .but3{
-    background-color: white;
+    background-color: #FFDAB9;
     color: black;
     border: white;
     font-size: large;
@@ -80,44 +63,7 @@ main {
     opacity: .8;
     text-decoration: none;
     border-radius: 10px;
-    background-color: lightgrey;
-}
-
-.navText{
-    font-family: "Roboto Light", Arial, sans-serif;
-    font-size: 3vh;
-    margin: 0;
-    color: black;
-}
-
-.underNav{
-    width: 80%;
-    margin: 0;
-    background-color: black;
-}
-
-.navBut{
-    height: 100%;
-    width: 98%;
-    color: black;
-    font-size: 18px;
-    background-color: white;
-    border: white;
-    border-radius: 5vh;
-    margin-top: 4vh;
-}
-
-.navBut:hover{
-    opacity: .8;
-    text-decoration: none;
-    background-color: lightgrey;
-}
-
-.greet{
-    color: black;
-    align-content: center;
-    margin-left: 50vh;
-    font-family: "Roboto Light", Arial, sans-serif;
-    font-size: xxx-large;
+    background-color: #e3a95e;
+    font-weight: bolder;
 }
 

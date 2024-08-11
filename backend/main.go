@@ -1,53 +1,28 @@
 package main
 
 import (
+	"backend/backend/pkg/db"
+	"backend/backend/pkg/handlers"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v5"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
 )
 
-var conn *pgx.Conn
-
-func init() {
-	var err error
-	conn, err = pgx.Connect(context.Background(), "user=postgres password=5589 host=localhost port=5432 dbname=postgres")
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func regHandler(c *fiber.Ctx) error {
-	var storage map[string]interface{}
-
-	err := json.Unmarshal(c.Body(), &storage)
-	if err != nil {
-		fmt.Println(err)
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	email, emailOk := storage["email"].(string)
-	name, nameOk := storage["name"].(string)
-	password, passwordOk := storage["password"]
-
-	if !emailOk || !nameOk || !passwordOk {
-		fmt.Println("Error here")
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	_, err = conn.Exec(context.Background(), "INSERT INTO usertodo (email, name, password) VALUES ($1, $2, $3)", email, name, password)
-	if err != nil {
-		fmt.Println(err)
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-	return c.SendStatus(fiber.StatusOK)
-}
-
 func main() {
-	webApp := fiber.New()
+	conn, err := db.InitDB()
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
 	defer conn.Close(context.Background())
+
+	webApp := fiber.New()
+	webApp.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173",
+		AllowHeaders: "Origin, Content-Type",
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
+	}))
 
 	rows, err := conn.Query(context.Background(), "SELECT * FROM usertodo")
 	if err != nil {
@@ -65,6 +40,7 @@ func main() {
 		fmt.Println(email, name, password)
 	}
 
-	webApp.Post("/register", regHandler)
-	log.Fatal(webApp.Listen(":5173"))
+	webApp.Post("/register", handlers.RegHandler(conn))
+
+	log.Fatal(webApp.Listen(":5174"))
 }

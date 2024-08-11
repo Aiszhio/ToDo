@@ -1,24 +1,21 @@
 <template>
-  <div id="Register">
-      <form @submit.prevent="submitForm" class="RegForm">
-        <p class="Regname">Регистрация</p>
-        <label for="email" class="Regtext">Почта:</label>
-        <input type="email" v-model="form.email" id="email" name="email" required><br><br>
+  <div id="Entrance">
+    <form>
+      <p class="Entname">Авторизация</p>
+      <label for="email" class="Enttext">Почта:</label>
+      <input type="email" v-model="form.email" id="email" name="email" required><br><br>
 
-        <label for="name" class="Regtext">Имя пользователя:</label>
-        <input type="text" v-model="form.name" id="name" name="name" required><br><br>
+      <label for="password" class="Enttext">Пароль:</label>
+      <input type="password" v-model="form.password" id="password" name="password" required><br><br>
 
-        <label for="password" class="Regtext">Пароль:</label>
-        <input type="password" v-model="form.password" id="password" name="password" required><br><br>
-
-        <input type="submit" value="Зарегистрироваться" class="regbutton">
-      </form>
+      <input type="submit" value="Войти" class="entbutton">
+    </form>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Register',
+  name: 'Entrance',
   data() {
     return {
       form: {
@@ -31,7 +28,7 @@ export default {
   methods: {
     async submitForm() {
       try {
-        const response = await fetch('http://localhost:5174/register', {
+        const response = await fetch('http://localhost:5174/Entrance', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -43,13 +40,12 @@ export default {
           throw new Error('Сервер вернул ошибку');
         }
 
-        alert('Регистрация прошла успешно!');
+        alert('Авторизация прошла успешно!');
         this.form.email = '';
-        this.form.name = '';
         this.form.password = '';
       } catch (error) {
         console.error('Ошибка:', error);
-        alert('Произошла ошибка при регистрации.');
+        alert('Произошла ошибка при авторизации.');
       }
     }
   }
@@ -57,7 +53,7 @@ export default {
 </script>
 
 <style scoped>
-#Register {
+#Entrance {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -68,7 +64,7 @@ p {
   color: black;
 }
 
-.regbutton {
+.entbutton {
   padding: 15px;
   background-color: #FFDAB9;
   border-radius: 20px;
@@ -77,7 +73,7 @@ p {
   font-size: large;
 }
 
-.regbutton:hover{
+.entbutton:hover{
   opacity: .8;
   text-decoration: none;
   border-radius: 20px;
@@ -85,13 +81,13 @@ p {
   font-weight: bolder;
 }
 
-.Regname {
+.Entname {
   margin-bottom: 5vh;
   font-family: "Roboto Light", Arial, sans-serif;
   font-size: x-large;
 }
 
-.RegForm{
+.EntForm{
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -101,7 +97,7 @@ p {
   padding: 35px;
 }
 
-.Regtext{
+.Enttext{
   font-family: "Roboto Light", Arial, sans-serif;
   font-size: large;
 }

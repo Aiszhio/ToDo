@@ -15,6 +15,9 @@ export default {
     },
     loadHome(){
       this.$router.push('/')
+    },
+    loadEnt(){
+      this.$router.push('/entrance')
     }
   }
 };
@@ -26,12 +29,20 @@ export default {
     <button class="but1" @click="loadReg()">
       Регистрация
     </button>
-    <button class="but2">
+    <button class="but2" @click="loadEnt()">
       Вход
     </button>
     <button class="but3" @click="loadHome()">
       Главная
     </button>
-    <router-view></router-view>
   </div>
+  <router-view></router-view>
 </template>
+
+<style scoped>
+#app{
+  display: flex;
+  justify-content: right;
+  background-color: #FFDAB9;
+}
+</style>
