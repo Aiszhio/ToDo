@@ -41,6 +41,7 @@ func main() {
 	}
 
 	webApp.Post("/register", handlers.RegHandler(conn))
+	webApp.Post("/entrance", handlers.EntranceHandler(conn))
 
 	log.Fatal(webApp.Listen(":5174"))
 }

@@ -1,6 +1,6 @@
 <template>
   <div id="Entrance">
-    <form>
+    <form @submit.prevent="handleSubmit" class="EntForm">
       <p class="Entname">Авторизация</p>
       <label for="email" class="Enttext">Почта:</label>
       <input type="email" v-model="form.email" id="email" name="email" required><br><br>
@@ -14,6 +14,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: 'Entrance',
   data() {
@@ -26,30 +28,25 @@ export default {
     }
   },
   methods: {
-    async submitForm() {
+    async handleSubmit() {
+      this.errorMessage = '';
+
       try {
-        const response = await fetch('http://localhost:5174/Entrance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(this.form)
-        });
+        const response = await axios.post('http://localhost:5174/entrance', this.form);
 
-        if (!response.ok) {
-          throw new Error('Сервер вернул ошибку');
+        if (response.status === 200) {
+          alert('Авторизация успешна!');
         }
-
-        alert('Авторизация прошла успешно!');
-        this.form.email = '';
-        this.form.password = '';
       } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при авторизации.');
+        if (error.response && error.response.status === 401) {
+          this.errorMessage = 'Неверный логин или пароль';
+        } else {
+          this.errorMessage = 'Произошла ошибка, попробуйте позже';
+        }
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>
