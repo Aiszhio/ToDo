@@ -44,6 +44,7 @@ export default {
         }
 
         alert('Регистрация прошла успешно!');
+        this.$router.push('/')
         this.form.email = '';
         this.form.name = '';
         this.form.password = '';

@@ -30,7 +30,7 @@ func EntranceHandler(conn *pgx.Conn) fiber.Handler {
 		var pass bool
 
 		err = conn.QueryRow(context.Background(),
-			"SELECT email, hash_password FROM usertodo WHERE email = $1", requestEmail).Scan(&emailDB, &passwordDB)
+			"SELECT email, hash_password FROM users WHERE email = $1", requestEmail).Scan(&emailDB, &passwordDB)
 		if err != nil {
 			if err == pgx.ErrNoRows {
 				fmt.Println("No rows were returned!")
@@ -50,7 +50,6 @@ func EntranceHandler(conn *pgx.Conn) fiber.Handler {
 		} else {
 			return c.SendStatus(fiber.StatusUnauthorized)
 		}
-		fmt.Println("Entrance is OK")
 		return c.SendStatus(fiber.StatusOK)
 	}
 }

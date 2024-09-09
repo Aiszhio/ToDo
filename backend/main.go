@@ -3,11 +3,16 @@ package main
 import (
 	"backend/backend/pkg/db"
 	"backend/backend/pkg/handlers"
+	"backend/backend/pkg/utils"
 	"context"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/lib/pq"
+	"golang.org/x/time/rate"
 	"log"
+	"time"
 )
 
 func main() {
@@ -24,21 +29,8 @@ func main() {
 		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
 	}))
 
-	rows, err := conn.Query(context.Background(), "SELECT * FROM usertodo")
-	if err != nil {
-		log.Fatalf("query failed: %v", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var email string
-		var password string
-		var name string
-		if err := rows.Scan(&email, &name, &password); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(email, name, password)
-	}
+	limiter := rate.NewLimiter(rate.Every(time.Second*30), 3)
+	webApp.Use(utils.MessageLimit(limiter))
 
 	webApp.Post("/register", handlers.RegHandler(conn))
 	webApp.Post("/entrance", handlers.EntranceHandler(conn))

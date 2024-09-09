@@ -7,7 +7,7 @@ import (
 )
 
 func InitDB() (*pgx.Conn, error) {
-	conn, err := pgx.Connect(context.Background(), "user=postgres password=5589 host=localhost port=5432 dbname=postgres")
+	conn, err := pgx.Connect(context.Background(), "postgres://postgres:1234@postgres:5432/usertodo?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 		return nil, err

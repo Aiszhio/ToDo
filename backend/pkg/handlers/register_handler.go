@@ -33,7 +33,7 @@ func RegHandler(conn *pgx.Conn) fiber.Handler {
 			return c.SendStatus(fiber.StatusBadRequest)
 		}
 
-		_, err = conn.Exec(context.Background(), "INSERT INTO usertodo (email, name, hash_password) VALUES ($1, $2, $3)", email, name, HashPassword(password))
+		_, err = conn.Exec(context.Background(), "INSERT INTO users (email, name, password, hash_password) VALUES ($1, $2, $3, $4)", email, name, password, HashPassword(password))
 		if err != nil {
 			fmt.Println(err)
 			return c.SendStatus(fiber.StatusBadRequest)

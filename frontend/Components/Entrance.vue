@@ -36,6 +36,7 @@ export default {
 
         if (response.status === 200) {
           alert('Авторизация успешна!');
+          this.$router.push('/')
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
