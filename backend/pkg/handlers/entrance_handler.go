@@ -1,55 +1,97 @@
 package handlers
 
 import (
+	"backend/backend/pkg/middleware"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"log"
+	"time"
 )
 
-func EntranceHandler(conn *pgx.Conn) fiber.Handler {
+type User struct {
+	Id   string
+	Name string
+}
+
+var WebUser User
+
+var storageLog map[string]interface{}
+
+var Token string
+
+func EntranceHandler(conn *pgxpool.Pool, rdb *redis.Client, secret string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var storage map[string]interface{}
 		var requestEmail, requestPassword string
 
-		err := json.Unmarshal(c.Body(), &storage)
+		err := json.Unmarshal(c.Body(), &storageLog)
 		if err != nil {
 			return fiber.ErrBadRequest
 		}
 
-		requestEmail = storage["email"].(string)
-		requestPassword = storage["password"].(string)
+		requestEmail = storageLog["email"].(string)
+		requestPassword = storageLog["password"].(string)
 
 		if requestEmail == "" || requestPassword == "" {
-			return fiber.ErrBadRequest
+			return c.SendStatus(fiber.StatusBadRequest)
 		}
 
-		var emailDB, passwordDB string
-		var pass bool
+		var idDB, emailDB, nameDB, passwordDB string
 
 		err = conn.QueryRow(context.Background(),
-			"SELECT email, hash_password FROM users WHERE email = $1", requestEmail).Scan(&emailDB, &passwordDB)
+			"SELECT id, email, name, hash_password FROM users WHERE email = $1", requestEmail).Scan(&idDB,
+			&emailDB, &nameDB, &passwordDB)
 		if err != nil {
 			if err == pgx.ErrNoRows {
-				fmt.Println("No rows were returned!")
+				return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "WebUser not found"})
 			} else {
-				log.Fatalf("QueryRow failed: %v", err)
+				log.Printf("QueryRow failed: %v", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
 			}
 		}
 
-		if emailDB == requestEmail {
-			pass = true
-		}
+		WebUser.Id = idDB
+		WebUser.Name = nameDB
 
-		if pass {
-			if CheckHashPassword(requestPassword, passwordDB) != nil {
-				return c.SendStatus(fiber.StatusUnauthorized)
+		if emailDB == requestEmail && CheckHashPassword(requestPassword, passwordDB) == nil {
+			secretKey := []byte(secret)
+			Token, err = JWTGenerator(secretKey)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).SendString("Error while signing Token")
 			}
+			err = middleware.SaveToken(context.Background(), rdb, WebUser.Id, Token)
+			if err != nil {
+				log.Fatalf("failed to save token: %v", err)
+			}
+			fmt.Println(middleware.GetToken(context.Background(), rdb, WebUser.Id))
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{"Token": Token})
 		} else {
 			return c.SendStatus(fiber.StatusUnauthorized)
 		}
-		return c.SendStatus(fiber.StatusOK)
 	}
+}
+
+func JWTGenerator(secret []byte) (string, error) {
+	if WebUser.Id == "" || WebUser.Name == "" {
+		return "", fmt.Errorf("invalid WebUser data")
+	}
+
+	claims := jwt.MapClaims{
+		"user_id":   WebUser.Id,
+		"user_name": WebUser.Name,
+		"exp":       time.Now().Add(time.Hour * 2).Unix(),
+	}
+
+	Token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, err := Token.SignedString(secret)
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
 }

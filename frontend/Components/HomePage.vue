@@ -3,6 +3,17 @@
 
 export default {
   name: 'home',
+  methods: {
+    loadCabinet(){
+      this.$router.push("cabinet")
+    },
+    loadNotes(){
+      this.$router.push("notes")
+    },
+    loadHelp(){
+      this.$router.push("help")
+    }
+  }
 }
 
 </script>
@@ -13,11 +24,9 @@ export default {
       <nav id="asideBut">
         <p class="navText">Меню</p>
         <hr class = "underNav">
-        <button class="navBut"> Главная </button>
-        <button class="navBut"> Личный кабинет </button>
-        <button class="navBut"> Заметки </button>
-        <button class="navBut"> Настройки </button>
-        <button class="navBut"> Помощь </button>
+        <button class="navBut" @click="loadCabinet"> Личный кабинет </button>
+        <button class="navBut" @click="loadNotes"> Заметки </button>
+        <button class="navBut" @click="loadHelp"> Помощь </button>
       </nav>
     </div>
 
@@ -32,11 +41,10 @@ export default {
   border-radius: 10px;
   background-color: #FFDAB9;
   width: 15%;
-  height: 85vh;
-  margin-top: 3vh;
+  height: 55vh;
+  margin-top: 10vh;
   margin-left: 1vh;
   padding-top: 1%;
-  align-content: start;
 }
 
 #asideBut{

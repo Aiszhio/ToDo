@@ -2,12 +2,10 @@
 <script>
 
 import home from './Components/HomePage.vue';
-import register from './Components/Reg.vue';
 
 export default {
   components: {
     home,
-    register,
   },
   methods:{
     loadReg(){
