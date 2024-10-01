@@ -68,7 +68,7 @@ func EntranceHandler(conn *pgxpool.Pool, rdb *redis.Client, secret string) fiber
 			if err != nil {
 				log.Fatalf("failed to save token: %v", err)
 			}
-			fmt.Println(middleware.GetToken(context.Background(), rdb, WebUser.Id))
+			fmt.Println(middleware.GetToken(c, rdb, WebUser.Id))
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{"Token": Token})
 		} else {
 			return c.SendStatus(fiber.StatusUnauthorized)
@@ -84,7 +84,7 @@ func JWTGenerator(secret []byte) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":   WebUser.Id,
 		"user_name": WebUser.Name,
-		"exp":       time.Now().Add(time.Hour * 2).Unix(),
+		"exp":       time.Now().Add(time.Minute * 10).Unix(),
 	}
 
 	Token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

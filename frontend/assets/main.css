@@ -10,7 +10,7 @@ main {
     margin: 0;
 }
 
-.but1{
+.but1, .but2, .but3{
     background-color: #FFDAB9;
     color: black;
     border: white;
@@ -19,51 +19,14 @@ main {
     width: 25vh;
     user-select: none;
     cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.but1:hover{
+.but1:hover, .but2:hover, .but3:hover{
     opacity: .8;
     text-decoration: none;
     border-radius: 10px;
-    background-color: #e3a95e;
+    background-color: #edbc91;
     font-weight: bolder;
+    transform: scale(0.95);
 }
-
-.but2{
-    background-color: #FFDAB9;
-    color: black;
-    border: white;
-    font-size: large;
-    height: 8vh;
-    width: 25vh;
-    user-select: none;
-    cursor: pointer;
-}
-
-.but2:hover{
-    opacity: .8;
-    text-decoration: none;
-    border-radius: 10px;
-    background-color: #e3a95e;
-    font-weight: bolder;
-}
-
-.but3{
-    background-color: #FFDAB9;
-    color: black;
-    border: white;
-    font-size: large;
-    height: 8vh;
-    width: 25vh;
-    user-select: none;
-    cursor: pointer;
-}
-
-.but3:hover{
-    opacity: .8;
-    text-decoration: none;
-    border-radius: 10px;
-    background-color: #e3a95e;
-    font-weight: bolder;
-}
-

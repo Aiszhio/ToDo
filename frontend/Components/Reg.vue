@@ -67,23 +67,27 @@ export default {
 
 p {
   color: black;
+  font-family: Arial;
 }
 
 .regbutton {
   padding: 15px;
-  background-color: #FFDAB9;
-  border-radius: 20px;
+  border: 1px solid white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 60%;
-  font-family: "Roboto Light", Arial, sans-serif;
   font-size: large;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .regbutton:hover{
   opacity: .8;
   text-decoration: none;
   border-radius: 20px;
-  background-color: #e3a95e;
+  background-color: #edbc91;
   font-weight: bolder;
+  transform: scale(0.95);
 }
 
 .Regname {
@@ -97,8 +101,10 @@ p {
   flex-direction: column;
   align-items: center;
   width: 30%;
-  border: 3px solid black;
-  border-radius: 20px;
+  border: 1px solid #FFDAB9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #FFDAB9;
   padding: 35px;
 }
 
@@ -111,21 +117,23 @@ p {
   margin-top: 2%;
   height: 5%;
   width: 45%;
-  border: 2px solid black;
-  border-radius: 4px;
+  border: 1px solid white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 15px;
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
-  transition: border-color 0.3s;
+  transition: border-color 0.1s;
 }
 
 #name{
   margin-top: 2%;
   height: 5%;
   width: 45%;
-  border: 2px solid black;
-  border-radius: 4px;
+  border: 1px solid white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 15px;
   font-size: 16px;
   box-sizing: border-box;
@@ -137,8 +145,9 @@ p {
   margin-top: 2%;
   height: 5%;
   width: 45%;
-  border: 2px solid black;
-  border-radius: 4px;
+  border: 1px solid white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 15px;
   font-size: 16px;
   box-sizing: border-box;

@@ -33,14 +33,30 @@ export default {
     <button class="but3" @click="loadHome()">
       Главная
     </button>
+
   </div>
-  <router-view></router-view>
+  <router-view v-slot="{ Component }">
+    <transition name="fade" mode="out-in">
+      <component :is="Component" />
+    </transition>
+  </router-view>
 </template>
+
 
 <style scoped>
 #app{
   display: flex;
   justify-content: right;
   background-color: #FFDAB9;
+}
+</style>
+
+<style>
+fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>

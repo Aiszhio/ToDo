@@ -13,15 +13,25 @@ export default {
   },
   methods: {
     async sendNote() {
+      const token = localStorage.getItem('jwtToken');
+      if (!token) {
+        alert('Не удалось получить токен. Авторизуйтесь снова.');
+        return;
+      }
+
       try {
-        const response = await axios.post('http://localhost:5174/notes', this.form);
+        const response = await axios.post('http://localhost:5174/notes', this.form, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
         if (response.status === 200) {
           alert('Ваша заметка была добавлена в базу!');
         }
       } catch (error) {
         console.error('Ошибка при отправке заметки:', error);
-        alert('Не удалось отправить заметку на сервер. Попробуйте позже.');
+        alert('Войдите в систему!');
       }
     }
   },
@@ -60,8 +70,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: 3px solid black;
-  border-radius: 20px;
+  border: 1px solid black;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 35px;
 }
 .NoteName {

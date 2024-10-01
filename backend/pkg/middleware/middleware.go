@@ -28,15 +28,15 @@ func GetTokenFromRequest(c *fiber.Ctx) (string, error) {
 }
 
 func SaveToken(ctx context.Context, rdb *redis.Client, userID, token string) error {
-	err := rdb.Set(ctx, userID, token, 2*time.Hour).Err()
+	err := rdb.Set(ctx, userID, token, 10*time.Minute).Err()
 	if err != nil {
 		return fmt.Errorf("Error saving token: %v", err)
 	}
 	return nil
 }
 
-func GetToken(ctx context.Context, rdb *redis.Client, userID string) string {
-	token, err := rdb.Get(ctx, userID).Result()
+func GetToken(c *fiber.Ctx, rdb *redis.Client, userID string) string {
+	token, err := rdb.Get(c.Context(), userID).Result()
 	if err != nil {
 		return ""
 	} else if token == "" {

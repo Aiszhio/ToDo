@@ -38,12 +38,10 @@ func MakeNote(conn *pgxpool.Pool, secret string) fiber.Handler {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 		}
 		var userName string
-		fmt.Println(token)
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			if name, ok := claims["user_name"].(string); ok {
 				userName = name
 			} else {
-				fmt.Println("sosy bebry")
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token: name not found or invalid"})
 			}
 		}
@@ -68,7 +66,7 @@ func MakeNote(conn *pgxpool.Pool, secret string) fiber.Handler {
 
 		fmt.Println("UserName:", userName, "Note:", note, "Date:", data)
 
-		parseDate, err := time.Parse("02/01/2006", data)
+		parseDate, err := time.Parse("2006-01-02", data)
 		if err != nil {
 			return fmt.Errorf("parse date error: %v", err)
 		}

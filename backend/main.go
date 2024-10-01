@@ -14,7 +14,6 @@ import (
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/time/rate"
 	"log"
-	"time"
 )
 
 func main() {
@@ -22,22 +21,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
-	rows, err := conn.Query(context.Background(), "SELECT * FROM users")
-	if err != nil {
-		log.Fatalf("failed to query users: %v", err)
-	}
-	fmt.Printf("Query: %+v\n", rows)
 
-	for rows.Next() {
-		var id int
-		var email, name, password, hash_password string
-		err = rows.Scan(&id, &email, &name, &password, &hash_password)
-		if err != nil {
-			log.Fatalf("failed to scan row: %v", err)
-		}
-		fmt.Printf("User: %d, Email: %s, Name: %s, Password: %s, Hash_password: %s\n", id, email, name, password, hash_password)
-	}
-	rows.Close()
+	db.ShowUsers(conn)
+	db.ShowNotes(conn)
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
@@ -54,16 +40,17 @@ func main() {
 	webApp := fiber.New()
 	webApp.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:5173",
-		AllowHeaders: "Origin, Content-Type",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
 	}))
 
-	limiter := rate.NewLimiter(rate.Every(time.Second*30), 3)
-	webApp.Use(utils.MessageLimit(limiter))
+	limiter := rate.NewLimiter(1, 10)
 
 	webApp.Post("/register", handlers.RegHandler(conn))
-	webApp.Post("/entrance", handlers.EntranceHandler(conn, rdb, "secret"))
+	webApp.Post("/entrance", utils.MessageLimit(limiter), handlers.EntranceHandler(conn, rdb, "secret"))
 	webApp.Post("/notes", handlers.MakeNote(conn, "secret"))
+	webApp.Post("/receive-token", handlers.ReceiveToken(rdb))
+	webApp.Post("/user-notes", handlers.GetUserNotes(conn))
 
 	defer conn.Close()
 	defer rdb.Close()

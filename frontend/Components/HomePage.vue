@@ -1,21 +1,29 @@
-
 <script>
-
 export default {
   name: 'home',
-  methods: {
-    loadCabinet(){
-      this.$router.push("cabinet")
-    },
-    loadNotes(){
-      this.$router.push("notes")
-    },
-    loadHelp(){
-      this.$router.push("help")
+  data() {
+    return {
+      userName: '',
+    };
+  },
+  mounted() {
+    const storedUserName = localStorage.getItem('userName');
+    if (storedUserName) {
+      this.userName = storedUserName;
     }
-  }
-}
-
+  },
+  methods: {
+    loadCabinet() {
+      this.$router.push("cabinet");
+    },
+    loadNotes() {
+      this.$router.push("notes");
+    },
+    loadHelp() {
+      this.$router.push("help");
+    },
+  },
+};
 </script>
 
 <template>
@@ -23,17 +31,18 @@ export default {
     <div id="asideInf">
       <nav id="asideBut">
         <p class="navText">Меню</p>
-        <hr class = "underNav">
+        <hr class="underNav">
         <button class="navBut" @click="loadCabinet"> Личный кабинет </button>
         <button class="navBut" @click="loadNotes"> Заметки </button>
         <button class="navBut" @click="loadHelp"> Помощь </button>
       </nav>
     </div>
 
-    <p class="greet">Добро пожаловать!</p>
-
+    <p class="greet">Добро пожаловать, {{ userName ? userName : 'гость' }}!</p>
   </main>
 </template>
+
+
 
 <style scoped>
 #asideInf {
@@ -45,6 +54,7 @@ export default {
   margin-top: 10vh;
   margin-left: 1vh;
   padding-top: 1%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 #asideBut{
@@ -78,14 +88,17 @@ export default {
   border: white;
   border-radius: 5vh;
   margin-top: 4vh;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-  .navBut:hover{
-    opacity: .8;
-    text-decoration: none;
-    background-color: #e3a95e;
-    font-weight: bolder;
-  }
+.navBut:hover{
+  opacity: .8;
+  text-decoration: none;
+  background-color: #edbc91;
+  font-weight: bolder;
+  transform: scale(0.95);
+}
 
 .greet{
   color: black;
