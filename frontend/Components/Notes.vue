@@ -1,115 +1,166 @@
-<script>
-import axios from "axios";
-
-export default {
-  name: "notes",
-  data() {
-    return {
-      form: {
-        note: '',
-        date: '',
-      }
-    };
-  },
-  methods: {
-    async sendNote() {
-      const token = localStorage.getItem('jwtToken');
-      if (!token) {
-        alert('Не удалось получить токен. Авторизуйтесь снова.');
-        return;
-      }
-
-      try {
-        const response = await axios.post('http://localhost:5174/notes', this.form, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (response.status === 200) {
-          alert('Ваша заметка была добавлена в базу!');
-        }
-      } catch (error) {
-        console.error('Ошибка при отправке заметки:', error);
-        alert('Войдите в систему!');
-      }
-    }
-  },
-  computed: {
-    minDate() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-  }
-};
-</script>
-
 <template>
   <div id="noteBlock">
-    <form @submit.prevent="sendNote" class="NoteForm">
-      <p class="NoteName">Напишите свою заметку</p>
-      <textarea v-model="form.note" id="note" name="note" maxlength="100" rows="3" required placeholder="Введите заметку..."></textarea><br>
-      <input type="date" v-model="form.date" id="notedate" name="notedate" required :min="minDate"><br>
-      <input type="submit" value="Добавить" class="submitnote">
+    <form @submit.prevent="sendNote" class="note-form">
+      <p class="note-title">Напишите свою заметку</p>
+      <textarea
+          v-model="form.note"
+          placeholder="Введите заметку…"
+          maxlength="100"
+          rows="3"
+          required
+      />
+      <input
+          type="date"
+          v-model="form.date"
+          :min="minDate"
+          required
+      />
+      <button type="submit" class="submit-btn">Добавить</button>
     </form>
   </div>
 </template>
 
+<script setup>
+import { ref, computed } from 'vue'
+import axios from 'axios'
+
+// 1) раз и навсегда подтягиваем токен и базовый URL
+const token = localStorage.getItem('jwtToken')
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5174',
+  headers: { Authorization: `Bearer ${token}` }
+})
+
+// 2) реактивная форма
+const form = ref({ note: '', date: '' })
+
+// 3) минимальная дата для <input type="date">
+const minDate = computed(() => new Date().toISOString().slice(0, 10))
+
+// 4) отправка заметки
+async function sendNote() {
+  if (!token) return alert('Токен не найден – залогинься заново')
+  try {
+    await api.post('/notes', form.value)
+    alert('Заметка добавлена 🎉')
+    // сбрасываем форму
+    form.value.note = ''
+    form.value.date = ''
+  } catch (err) {
+    console.error('sendNote error:', err)
+    alert('Ошибка при добавлении – проверь авторизацию')
+  }
+}
+</script>
+
 <style scoped>
 #noteBlock {
   display: flex;
-  flex-direction: row;
   justify-content: center;
   align-items: center;
-  height: 80vh;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
-.NoteForm {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid black;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 35px;
+
+.note-form {
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  animation: slideIn 0.4s ease-out;
 }
-.NoteName {
-  font-family: Arial;
-  font-size: x-large;
-  margin-bottom: 2vh;
+
+.note-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.8rem;
+  color: #2d3436;
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
-#note {
-  box-sizing: border-box;
-  margin: 1vh;
-  padding-left: 1vh;
-  height: 15vh;
-  width: 50vh;
-  border: 3px solid #ccc;
-  border-radius: 10px;
-  font-family: Arial;
-  font-size: larger;
-  overflow-wrap: break-word;
-  resize: horizontal;
-  min-width: 50vh;
-  max-width: 90vh;
+
+textarea {
+  width: 90%;
+  max-width: 90%;
+  min-width: 70%;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
 }
-#notedate {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  transition: border-color 0.3s;
+
+textarea:focus {
+  outline: none;
+  border-color: #74b9ff;
+  box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.2);
 }
-.submitnote {
-  font-family: Arial;
-  font-size: larger;
-  margin-top: 2vh;
-  padding: 1vh;
-  width: 80%;
-  border: 2px solid #ccc;
-  border-radius: 5px;
-  background-color: #FFDAB9;
+
+input[type="date"] {
+  padding: 0.8rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+input[type="date"]:focus {
+  outline: none;
+  border-color: #74b9ff;
+  box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.2);
+}
+
+.submit-btn {
+  padding: 1rem;
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(116, 185, 255, 0.3);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  #noteBlock {
+    padding: 1rem;
+  }
+
+  .note-form {
+    padding: 1.5rem;
+  }
+
+  .note-title {
+    font-size: 1.5rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

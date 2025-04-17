@@ -1,97 +1,3 @@
-<script>
-import axios from "axios";
-
-export default {
-  name: 'Account',
-  data() {
-    return {
-      userName: '',        // Имя пользователя из localStorage
-      notes: [],           // Все заметки пользователя
-      upcomingNotes: [],   // Отфильтрованные предстоящие заметки
-      expiredNotes: [],    // Отфильтрованные истекшие заметки
-      offset: 0,           // Начальное смещение
-      limit: 20,           // Количество заметок для загрузки
-    };
-  },
-  async created() {
-    try {
-      this.userName = localStorage.getItem('userName');
-      const token = localStorage.getItem('jwtToken');
-
-      if (token && this.userName) {
-        await this.loadNotes(); // Загружаем заметки при создании компонента
-      } else {
-        console.error("Token or username not found!");
-      }
-    } catch (error) {
-      console.error("Ошибка при получении данных пользователя: ", error);
-    }
-  },
-  mounted() {
-    window.addEventListener('scroll', this.handleScroll);
-  },
-  beforeDestroy() {
-    window.removeEventListener('scroll', this.handleScroll);
-  },
-  methods: {
-    formatDate(dateString) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      return new Date(dateString).toLocaleDateString(undefined, options);
-    },
-    async loadNotes() {
-      const token = localStorage.getItem('jwtToken');
-      try {
-        const response = await axios.post(
-            'http://localhost:5174/user-notes',
-            { userName: this.userName },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              },
-              params: {
-                limit: this.limit,
-                offset: this.offset
-              }
-            }
-        );
-
-        const newNotes = response.data.notes;
-        this.notes = [...this.notes, ...newNotes]; // Объединяем с уже загруженными заметками
-
-        const currentDate = new Date();
-        const twoDaysAgo = new Date(currentDate);
-        twoDaysAgo.setDate(currentDate.getDate() - 2);
-
-        // Фильтрация предстоящих и истекших заметок
-        this.upcomingNotes = this.notes.filter(note => new Date(note.createdTo) >= currentDate);
-        this.expiredNotes = this.notes.filter(note => {
-          const noteDate = new Date(note.createdTo);
-          return noteDate <= currentDate && noteDate >= twoDaysAgo;
-        });
-
-        this.offset += this.limit; // Увеличиваем смещение для следующего запроса
-      } catch (error) {
-        console.error("Ошибка при загрузке заметок: ", error);
-      }
-    },
-    handleScroll() {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.offsetHeight;
-
-      console.log("Scroll position:", scrollTop);
-      console.log("Window height:", windowHeight);
-      console.log("Document height:", documentHeight);
-
-      if (scrollTop + windowHeight >= documentHeight - 100) {
-        console.log("Loading more notes...");
-        this.loadNotes(); // Загружаем больше заметок, когда достигнут низ страницы
-      }
-    },
-  }
-};
-</script>
-
 <template>
   <div id="accountInf">
     <section class="account-section">
@@ -101,7 +7,7 @@ export default {
       </div>
 
       <div class="notes-section">
-        <div class="upcoming-notes">
+        <div class="notes-block">
           <h3>Предстоящие заметки</h3>
           <ul>
             <li v-for="note in upcomingNotes" :key="note.id" class="note-item">
@@ -111,7 +17,7 @@ export default {
           </ul>
         </div>
 
-        <div class="expired-notes">
+        <div class="notes-block">
           <h3>Недавние заметки</h3>
           <ul>
             <li v-for="note in expiredNotes" :key="note.id" class="note-item">
@@ -125,72 +31,232 @@ export default {
   </div>
 </template>
 
+<script>
+import axios from 'axios'
+import { throttle } from 'lodash'
+
+export default {
+  name: 'Account',
+  data: () => ({
+    userName: localStorage.getItem('userName') || '',
+    token: localStorage.getItem('jwtToken') || '',
+    notes: [],
+    offset: 0,
+    limit: 20,
+    loading: false,
+  }),
+  computed: {
+    upcomingNotes() {
+      const now = Date.now()
+      return this.notes.filter(n => new Date(n.createdTo).getTime() >= now)
+    },
+    expiredNotes() {
+      const now = Date.now()
+      const twoDaysAgo = now - 2 * 24 * 60 * 60 * 1000
+      return this.notes.filter(n => {
+        const t = new Date(n.createdTo).getTime()
+        return t < now && t >= twoDaysAgo
+      })
+    }
+  },
+  created() {
+    // единый axios‑клиент
+    this.api = axios.create({
+      baseURL: 'http://localhost:5174',
+      headers: { Authorization: `Bearer ${this.token}` }
+    })
+  },
+  async mounted() {
+    if (!this.token || !this.userName) {
+      console.error('No token or userName')
+      return
+    }
+    await this.loadNotes()
+    window.addEventListener('scroll', this.onScroll)
+  },
+  beforeDestroy() {
+    window.removeEventListener('scroll', this.onScroll)
+  },
+  methods: {
+    formatDate(d) {
+      return new Date(d).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
+    },
+    async loadNotes() {
+      if (this.loading) return
+      this.loading = true
+      try {
+        const res = await this.api.post('/user-notes',
+            { userName: this.userName },
+            { params: { offset: this.offset, limit: this.limit } }
+        )
+        const newNotes = res.data.notes || []
+        this.notes.push(...newNotes)
+        this.offset += this.limit
+      } catch (e) {
+        console.error('loadNotes error:', e)
+      } finally {
+        this.loading = false
+      }
+    },
+    onScroll: throttle(function() {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+        this.loadNotes()
+      }
+    }, 200)
+  }
+}
+</script>
+
 <style scoped>
 #accountInf {
   display: flex;
   justify-content: center;
-  margin-top: 2%;
-  background-color: #fff;
-  height: 85vh;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
 .account-section {
-  width: 80%;
-  max-width: 900px;
-  height: 90%;
-  padding: 20px;
-  background-color: #FFDAB9;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  animation: slideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  color: #2d3436;
   text-align: center;
-  color: #333;
-  margin-bottom: 20px;
-  font-size: 2em;
+  margin-bottom: 2rem;
+  position: relative;
 }
 
-.user-info {
-  text-align: center;
-  margin-bottom: 20px;
+h2::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: #ff7675;
+  margin: 0.5rem auto;
 }
 
-h3 {
-  font-size: 1.5em;
-  color: #555;
+.user-info h3 {
+  font-size: 1.8rem;
+  color: #636e72;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .notes-section {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
 }
 
-.upcoming-notes, .expired-notes {
-  width: 48%;
-  height: 50vh;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  max-height: 80vh;
-  overflow-y: auto;
+.notes-block {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.notes-block:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.notes-block h3 {
+  font-size: 1.4rem;
+  color: #2d3436;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #74b9ff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .note-item {
-  margin-bottom: 10px;
-  padding: 10px;
-  border-bottom: 1px solid #FFDAB9;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.note-item:hover {
+  background: white;
+  box-shadow: 0 2px 8px rgba(116, 185, 255, 0.15);
 }
 
 .note-item strong {
-  color: #333;
-  font-size: 1.2em;
+  font-size: 1.1rem;
+  color: #2d3436;
+  display: block;
+  margin-bottom: 0.3rem;
 }
 
 .note-item p {
-  color: #666;
-  font-size: 0.9em;
+  font-size: 0.95rem;
+  color: #636e72;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+/* Анимации */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .account-section {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .notes-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Кастомный скролл */
+.notes-block::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notes-block::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.notes-block::-webkit-scrollbar-thumb {
+  background: #74b9ff;
+  border-radius: 3px;
+}
+
+.notes-block::-webkit-scrollbar-thumb:hover {
+  background: #0984e3;
 }
 </style>

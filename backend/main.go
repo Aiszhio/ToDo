@@ -22,9 +22,6 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	db.ShowUsers(conn)
-	db.ShowNotes(conn)
-
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
 		Password: "",
@@ -53,6 +50,11 @@ func main() {
 	webApp.Post("/user-notes", handlers.GetUserNotes(conn))
 
 	defer conn.Close()
-	defer rdb.Close()
+	defer func(rdb *redis.Client) {
+		err = rdb.Close()
+		if err != nil {
+
+		}
+	}(rdb)
 	defer log.Fatal(webApp.Listen(":5174"))
 }
