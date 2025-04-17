@@ -1,157 +1,116 @@
 <template>
-  <div id="Register">
-      <form @submit.prevent="submitForm" class="RegForm">
-        <p class="Regname">Регистрация</p>
-        <label for="email" class="Regtext">Почта:</label>
-        <input type="email" v-model="form.email" id="email" name="email" required><br><br>
+  <div class="register-container">
+    <form @submit.prevent="onSubmit" class="form">
+      <h2 class="title">Регистрация</h2>
 
-        <label for="name" class="Regtext">Имя пользователя:</label>
-        <input type="text" v-model="form.name" id="name" name="name" required><br><br>
+      <label class="label">
+        Почта
+        <input v-model="form.email" type="email" required />
+      </label>
 
-        <label for="password" class="Regtext">Пароль:</label>
-        <input type="password" v-model="form.password" id="password" name="password" required><br><br>
+      <label class="label">
+        Имя пользователя
+        <input v-model="form.name" type="text" required />
+      </label>
 
-        <input type="submit" value="Зарегистрироваться" class="regbutton">
-      </form>
+      <label class="label">
+        Пароль
+        <input v-model="form.password" type="password" required />
+      </label>
+
+      <button type="submit" class="btn">Зарегистрироваться</button>
+    </form>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Register',
-  data() {
-    return {
-      form: {
-        email: '',
-        name: '',
-        password: ''
-      }
-    }
-  },
-  methods: {
-    async submitForm() {
-      try {
-        const response = await fetch('http://localhost:5174/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(this.form)
-        });
+<script setup>
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
-        if (!response.ok) {
-          throw new Error('Сервер вернул ошибку');
-        }
+// реактивная форма
+const form = reactive({
+  email: '',
+  name: '',
+  password: ''
+})
 
-        alert('Регистрация прошла успешно!');
-        this.$router.push('/')
-        this.form.email = '';
-        this.form.name = '';
-        this.form.password = '';
-      } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при регистрации.');
-      }
-    }
+const router = useRouter()
+
+async function onSubmit() {
+  try {
+    await axios.post('http://localhost:5174/register', form, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+    alert('Регистрация прошла успешно!')
+    // сброс формы
+    form.email = form.name = form.password = ''
+    router.push('/')
+  } catch (e) {
+    console.error('Registration error:', e)
+    alert('Ошибка при регистрации. Попробуйте ещё раз.')
   }
 }
 </script>
 
 <style scoped>
-#Register {
+.register-container {
   display: flex;
-  flex-direction: row;
   justify-content: center;
-  margin-top: 1%;
+  align-items: center;
+  padding: 2rem;
+  min-height: 80vh;
+  background: #fff;
 }
 
-p {
-  color: black;
-  font-family: Arial;
-}
-
-.regbutton {
-  padding: 15px;
-  border: 1px solid white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 60%;
-  font-size: large;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.regbutton:hover{
-  opacity: .8;
-  text-decoration: none;
-  border-radius: 20px;
-  background-color: #edbc91;
-  font-weight: bolder;
-  transform: scale(0.95);
-}
-
-.Regname {
-  margin-bottom: 5vh;
-  font-family: "Roboto Light", Arial, sans-serif;
-  font-size: x-large;
-}
-
-.RegForm{
+.form {
+  background: #FFDAB9;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 30%;
-  border: 1px solid #FFDAB9;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #FFDAB9;
-  padding: 35px;
+  gap: 1rem;
 }
 
-.Regtext{
-  font-family: "Roboto Light", Arial, sans-serif;
-  font-size: large;
+.title {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
-#email{
-  margin-top: 2%;
-  height: 5%;
-  width: 45%;
-  border: 1px solid white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  font-size: 16px;
-  box-sizing: border-box;
+.label {
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  gap: 0.25rem;
+}
+
+.label input {
+  padding: 0.5rem;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.1s;
+  transition: border-color 0.2s;
+}
+.label input:focus {
+  border-color: #edbc91;
 }
 
-#name{
-  margin-top: 2%;
-  height: 5%;
-  width: 45%;
-  border: 1px solid white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  font-size: 16px;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.3s;
+.btn {
+  padding: 0.75rem;
+  background: #fff;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
 }
-
-#password{
-  margin-top: 2%;
-  height: 5%;
-  width: 45%;
-  border: 1px solid white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  font-size: 16px;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.3s;
+.btn:hover {
+  background: #edbc91;
+  transform: translateY(-1px);
 }
 </style>

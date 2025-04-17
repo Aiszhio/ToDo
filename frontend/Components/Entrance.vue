@@ -1,181 +1,146 @@
-<script>
-import axios from "axios";
-import { jwtDecode } from 'jwt-decode';
-
-export default {
-  name: 'Entrance',
-  data() {
-    return {
-      form: {
-        email: '',
-        password: ''
-      },
-      errorMessage: ''
-    }
-  },
-  methods: {
-    async handleSubmit() {
-      this.errorMessage = '';
-      try {
-        // Отправляем запрос на вход
-        const response = await axios.post('http://localhost:5174/entrance', this.form);
-
-        if (response.status === 200) {
-          alert("Authentification is good!");
-          // Получаем токен после успешной аутентификации
-          const tokenResponse = await axios.post('http://localhost:5174/receive-token');
-
-          if (tokenResponse.status === 200 && tokenResponse.data.token) {
-            const token = tokenResponse.data.token;
-            localStorage.setItem('jwtToken', token);
-            console.log(token);
-
-            try {
-              // Декодируем токен и сохраняем имя пользователя
-              const decoded = jwtDecode(token);
-              console.log('Decoded token:', decoded);
-              localStorage.setItem('userName', decoded.user_name);
-
-              // Проверка срока действия токена
-              const expirationTime = decoded.exp * 1000; // преобразуем Unix time в миллисекунды
-              const currentTime = Date.now();
-
-              if (expirationTime <= currentTime) {
-                this.logout(); // Если токен истек, выполняем логаут
-              } else {
-                // Устанавливаем таймер для автоматического логаута
-                const remainingTime = expirationTime - currentTime;
-                setTimeout(() => {
-                  this.logout();
-                }, remainingTime);
-                // Перенаправляем на домашнюю страницу
-                this.$router.push('/');
-              }
-
-            } catch (error) {
-              console.error('Ошибка декодирования токена или перенаправления:', error);
-            }
-          } else {
-            this.errorMessage = 'Не удалось получить токен.';
-          }
-        }
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          this.errorMessage = 'Неверный логин или пароль';
-        } else {
-          this.errorMessage = 'Произошла ошибка, попробуйте позже';
-        }
-      }
-    },
-
-    logout() {
-      // Очистка токена и имени пользователя из localStorage
-      localStorage.removeItem('jwtToken');
-      localStorage.removeItem('userName');
-      // Перенаправление на страницу логина
-      this.$router.push('/login');
-    }
-  }
-};
-</script>
-
 <template>
-  <div id="Entrance">
-    <form @submit.prevent="handleSubmit" class="EntForm">
-      <p class="Entname">Авторизация</p>
-      <label for="email" class="Enttext">Почта:</label>
-      <input type="email" v-model="form.email" id="email" name="email" required><br><br>
+  <div class="auth-container">
+    <form @submit.prevent="handleSubmit" class="auth-form">
+      <h2 class="title">Авторизация</h2>
+      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
-      <label for="password" class="Enttext">Пароль:</label>
-      <input type="password" v-model="form.password" id="password" name="password" required><br><br>
+      <label class="field">
+        Почта
+        <input v-model="form.email" type="email" required />
+      </label>
 
-      <input type="submit" value="Войти" class="entbutton">
+      <label class="field">
+        Пароль
+        <input v-model="form.password" type="password" required />
+      </label>
+
+      <button type="submit" class="btn">Войти</button>
     </form>
   </div>
 </template>
 
+<script setup>
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { jwtDecode } from 'jwt-decode'
+
+const router = useRouter()
+const form = reactive({ email: '', password: '' })
+const errorMessage = ref('')
+
+// единый axios‑клиент
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174'
+const api = axios.create({ baseURL: API_URL })
+
+function logout() {
+  localStorage.removeItem('jwtToken')
+  localStorage.removeItem('userName')
+  router.push('/login')
+}
+
+async function handleSubmit() {
+  errorMessage.value = ''
+  try {
+    // запрос на аутентификацию
+    await api.post('/entrance', form)
+
+    // второй запрос за JWT
+    const { data } = await api.post('/receive-token')
+    const token = data.token
+    if (!token) throw new Error('no token')
+
+    localStorage.setItem('jwtToken', token)
+
+    // декодируем токен
+    const decoded = jwtDecode(token)
+    const uname = decoded.user_name || decoded.userName
+    localStorage.setItem('userName', uname)
+
+    // рассчитываем время до истечения
+    const expMs = decoded.exp * 1000 - Date.now()
+    if (expMs <= 0) {
+      logout()
+    } else {
+      setTimeout(logout, expMs)
+      router.push('/')
+    }
+  } catch (err) {
+    if (err.response?.status === 401) {
+      errorMessage.value = 'Неверный логин или пароль'
+    } else {
+      errorMessage.value = 'Ошибка сервера, попробуйте позже'
+    }
+  }
+}
+</script>
+
 <style scoped>
-#Entrance {
+.auth-container {
   display: flex;
-  flex-direction: row;
   justify-content: center;
-  margin-top: 1%;
+  align-items: center;
+  padding: 2rem;
+  min-height: 80vh;
+  background: #fff;
 }
 
-p {
-  color: black;
-  font-family: Arial;
-}
-
-.entbutton {
-  padding: 15px;
-  border: 1px solid white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 60%;
-  font-family: "Roboto Light", Arial, sans-serif;
-  font-size: large;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.entbutton:hover{
-  opacity: .8;
-  text-decoration: none;
-  border-radius: 20px;
-  background-color: #edbc91;
-  font-weight: bolder;
-  transform: scale(0.95);
-}
-
-.Entname {
-  margin-bottom: 5vh;
-  font-family: "Roboto Light", Arial, sans-serif;
-  font-size: x-large;
-}
-
-.EntForm{
+.auth-form {
+  background: #FFDAB9;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 30%;
-  border: 1px solid #FFDAB9;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #FFDAB9;
-  padding: 35px;
+  gap: 1rem;
 }
 
-.Enttext{
-  font-family: "Roboto Light", Arial, sans-serif;
-  font-size: large;
+.title {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
-#email{
-  margin-top: 2%;
-  height: 5%;
-  width: 45%;
-  border: 1px solid white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  font-size: 16px;
-  box-sizing: border-box;
+.error {
+  color: #c00;
+  text-align: center;
+  margin: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  gap: 0.25rem;
+}
+
+.field input {
+  padding: 0.5rem;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.1s;
+  transition: border-color 0.2s;
 }
 
-#password{
-  margin-top: 2%;
-  height: 5%;
-  width: 45%;
-  border: 1px solid white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  font-size: 16px;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.1s;
+.field input:focus {
+  border-color: #edbc91;
+}
+
+.btn {
+  padding: 0.75rem;
+  background: #fff;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:hover {
+  background: #edbc91;
+  transform: translateY(-1px);
 }
 </style>

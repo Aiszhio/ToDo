@@ -64,8 +64,6 @@ func MakeNote(conn *pgxpool.Pool, secret string) fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Date is required"})
 		}
 
-		fmt.Println("UserName:", userName, "Note:", note, "Date:", data)
-
 		parseDate, err := time.Parse("2006-01-02", data)
 		if err != nil {
 			return fmt.Errorf("parse date error: %v", err)

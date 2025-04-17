@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+    volumes:
+      - ./frontend:/app/frontend
     restart: always
     ports:
       - "5173:5173"
@@ -13,6 +15,8 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    volumes:
+      - ./backend:/app/backend
     restart: always
     depends_on:
       - postgres
@@ -22,7 +26,7 @@ services:
       - "5174:5174"
 
   postgres:
-    image: postgres
+    image: postgres:16
     restart: always
     environment:
       POSTGRES_USER: postgres

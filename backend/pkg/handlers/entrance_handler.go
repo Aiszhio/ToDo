@@ -68,7 +68,6 @@ func EntranceHandler(conn *pgxpool.Pool, rdb *redis.Client, secret string) fiber
 			if err != nil {
 				log.Fatalf("failed to save token: %v", err)
 			}
-			fmt.Println(middleware.GetToken(c, rdb, WebUser.Id))
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{"Token": Token})
 		} else {
 			return c.SendStatus(fiber.StatusUnauthorized)
