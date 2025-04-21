@@ -1,28 +1,48 @@
 <template>
-  <div id="accountInf">
-    <section class="account-section">
-      <h2>Личный кабинет</h2>
-      <div class="user-info">
-        <h3>Привет, {{ userName }}!</h3>
-      </div>
+  <div class="layout-center">
+    <section class="card w-100">
+      <h2 class="title-lg text-center mb-2">Личный кабинет</h2>
+      <p class="title-md text-center mb-2">Привет, {{ userName }}!</p>
 
-      <div class="notes-section">
-        <div class="notes-block">
-          <h3>Предстоящие заметки</h3>
+      <div class="notes-grid mb-2">
+        <div>
+          <h3 class="title-sm mb-1">Предстоящие заметки</h3>
           <ul>
-            <li v-for="note in upcomingNotes" :key="note.id" class="note-item">
-              <strong>{{ note.title }}</strong> — {{ formatDate(note.createdTo) }}
-              <p>{{ note.description }}</p>
+            <li
+                v-for="note in upcomingNotes"
+                :key="note.id"
+                class="note-card"
+            >
+              <div>
+                <strong>{{ note.title }}</strong>
+                <p class="mb-1 text-sm">{{ formatDate(note.createdTo) }}</p>
+                <p class="text-sm">{{ note.description }}</p>
+              </div>
+              <div class="note-actions">
+                <button @click="onEdit(note)">✏️</button>
+                <button @click="onDelete(note.id)">🗑️</button>
+              </div>
             </li>
           </ul>
         </div>
 
-        <div class="notes-block">
-          <h3>Недавние заметки</h3>
+        <div>
+          <h3 class="title-sm mb-1">Недавние заметки</h3>
           <ul>
-            <li v-for="note in expiredNotes" :key="note.id" class="note-item">
-              <strong>{{ note.title }}</strong> — {{ formatDate(note.createdTo) }}
-              <p>{{ note.description }}</p>
+            <li
+                v-for="note in expiredNotes"
+                :key="note.id"
+                class="note-card"
+            >
+              <div>
+                <strong>{{ note.title }}</strong>
+                <p class="mb-1 text-sm">{{ formatDate(note.createdTo) }}</p>
+                <p class="text-sm">{{ note.description }}</p>
+              </div>
+              <div class="note-actions">
+                <button @click="onEdit(note)">✏️</button>
+                <button @click="onDelete(note.id)">🗑️</button>
+              </div>
             </li>
           </ul>
         </div>
@@ -60,17 +80,13 @@ export default {
     }
   },
   created() {
-    // единый axios‑клиент
     this.api = axios.create({
       baseURL: 'http://localhost:5174',
       headers: { Authorization: `Bearer ${this.token}` }
     })
   },
   async mounted() {
-    if (!this.token || !this.userName) {
-      console.error('No token or userName')
-      return
-    }
+    if (!this.token || !this.userName) return
     await this.loadNotes()
     window.addEventListener('scroll', this.onScroll)
   },
@@ -87,7 +103,8 @@ export default {
       if (this.loading) return
       this.loading = true
       try {
-        const res = await this.api.post('/user-notes',
+        const res = await this.api.post(
+            '/user-notes',
             { userName: this.userName },
             { params: { offset: this.offset, limit: this.limit } }
         )
@@ -104,159 +121,37 @@ export default {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
         this.loadNotes()
       }
-    }, 200)
+    }, 200),
+    async onEdit(note) {
+      const newTitle = prompt('Новая заметка:', note.title)
+      if (newTitle == null) return
+      const newDate = prompt('Новая дата (YYYY-MM-DD):', note.createdTo.slice(0,10))
+      if (!newDate) return
+      try {
+        await this.api.put('/put-notes', {
+          id: note.id,
+          note: newTitle,
+          date: newDate
+        })
+        note.title = newTitle
+        note.createdTo = newDate
+        alert('Заметка обновлена!')
+      } catch (e) {
+        console.error('edit error:', e)
+        alert('Не получилось обновить.')
+      }
+    },
+    async onDelete(id) {
+      if (!confirm('Точно удалить?')) return
+      try {
+        await this.api.delete('/delete-notes', { data: { id } })
+        this.notes = this.notes.filter(n => n.id !== id)
+        alert('Заметка удалена!')
+      } catch (e) {
+        console.error('delete error:', e)
+        alert('Не получилось удалить.')
+      }
+    }
   }
 }
 </script>
-
-<style scoped>
-#accountInf {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 1rem;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.account-section {
-  width: 100%;
-  max-width: 1200px;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  animation: slideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-h2 {
-  font-family: 'Poppins', sans-serif;
-  font-size: 2.5rem;
-  color: #2d3436;
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-h2::after {
-  content: '';
-  display: block;
-  width: 60px;
-  height: 3px;
-  background: #ff7675;
-  margin: 0.5rem auto;
-}
-
-.user-info h3 {
-  font-size: 1.8rem;
-  color: #636e72;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.notes-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.notes-block {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.notes-block:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.notes-block h3 {
-  font-size: 1.4rem;
-  color: #2d3436;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #74b9ff;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.note-item {
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.note-item:hover {
-  background: white;
-  box-shadow: 0 2px 8px rgba(116, 185, 255, 0.15);
-}
-
-.note-item strong {
-  font-size: 1.1rem;
-  color: #2d3436;
-  display: block;
-  margin-bottom: 0.3rem;
-}
-
-.note-item p {
-  font-size: 0.95rem;
-  color: #636e72;
-  line-height: 1.5;
-  margin-top: 0.5rem;
-}
-
-/* Анимации */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .account-section {
-    padding: 1.5rem;
-    border-radius: 12px;
-  }
-
-  h2 {
-    font-size: 2rem;
-  }
-
-  .notes-section {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Кастомный скролл */
-.notes-block::-webkit-scrollbar {
-  width: 6px;
-}
-
-.notes-block::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.notes-block::-webkit-scrollbar-thumb {
-  background: #74b9ff;
-  border-radius: 3px;
-}
-
-.notes-block::-webkit-scrollbar-thumb:hover {
-  background: #0984e3;
-}
-</style>

@@ -48,6 +48,14 @@ func main() {
 	webApp.Post("/notes", handlers.MakeNote(conn, "secret"))
 	webApp.Post("/receive-token", handlers.ReceiveToken(rdb))
 	webApp.Post("/user-notes", handlers.GetUserNotes(conn))
+	webApp.Put("/put-notes", handlers.UpdateNote(conn, "secret"))
+	webApp.Delete("/delete-notes", handlers.DeleteNote(conn, "secret"))
+	webApp.Get("/suka", fiber.Handler(
+		func(c *fiber.Ctx) error {
+			return c.JSON(fiber.Map{
+				"success": true,
+			})
+		}))
 
 	defer conn.Close()
 	defer func(rdb *redis.Client) {

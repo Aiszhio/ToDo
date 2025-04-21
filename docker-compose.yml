@@ -17,13 +17,13 @@ services:
       dockerfile: backend/Dockerfile
     volumes:
       - ./backend:/app/backend
-    restart: always
-    depends_on:
-      - postgres
-    environment:
-      DATABASE_URL: postgres://postgres:1234@postgres:5432/usertodo?sslmode=disable
     ports:
       - "5174:5174"
+    environment:
+      DATABASE_URL: postgres://postgres:1234@postgres:5432/usertodo?sslmode=disable
+    depends_on:
+      - postgres
+
 
   postgres:
     image: postgres:16
