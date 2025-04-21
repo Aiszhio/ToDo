@@ -91,6 +91,6 @@ func JWTGenerator(secret []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	fmt.Println(Token)
 	return signedToken, nil
 }

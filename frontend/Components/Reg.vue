@@ -1,24 +1,44 @@
 <template>
-  <div class="register-container">
-    <form @submit.prevent="onSubmit" class="form">
-      <h2 class="title">Регистрация</h2>
+  <div class="layout-center">
+    <form @submit.prevent="onSubmit" class="card">
+      <h2 class="title-lg text-center">Регистрация</h2>
 
-      <label class="label">
+      <label class="field">
         Почта
-        <input v-model="form.email" type="email" required />
+        <input
+            class="input"
+            v-model="form.email"
+            type="email"
+            placeholder="example@mail.com"
+            required
+        />
       </label>
 
-      <label class="label">
+      <label class="field">
         Имя пользователя
-        <input v-model="form.name" type="text" required />
+        <input
+            class="input"
+            v-model="form.name"
+            type="text"
+            placeholder="Ваш ник"
+            required
+        />
       </label>
 
-      <label class="label">
+      <label class="field">
         Пароль
-        <input v-model="form.password" type="password" required />
+        <input
+            class="input"
+            v-model="form.password"
+            type="password"
+            placeholder="••••••••"
+            required
+        />
       </label>
 
-      <button type="submit" class="btn">Зарегистрироваться</button>
+      <button type="submit" class="btn btn-primary">
+        Зарегистрироваться
+      </button>
     </form>
   </div>
 </template>
@@ -28,7 +48,6 @@ import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-// реактивная форма
 const form = reactive({
   email: '',
   name: '',
@@ -43,7 +62,6 @@ async function onSubmit() {
       headers: { 'Content-Type': 'application/json' }
     })
     alert('Регистрация прошла успешно!')
-    // сброс формы
     form.email = form.name = form.password = ''
     router.push('/')
   } catch (e) {
@@ -52,65 +70,3 @@ async function onSubmit() {
   }
 }
 </script>
-
-<style scoped>
-.register-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  min-height: 80vh;
-  background: #fff;
-}
-
-.form {
-  background: #FFDAB9;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  width: 100%;
-  max-width: 360px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.title {
-  text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.label {
-  display: flex;
-  flex-direction: column;
-  font-size: 1rem;
-  gap: 0.25rem;
-}
-
-.label input {
-  padding: 0.5rem;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.label input:focus {
-  border-color: #edbc91;
-}
-
-.btn {
-  padding: 0.75rem;
-  background: #fff;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-.btn:hover {
-  background: #edbc91;
-  transform: translateY(-1px);
-}
-</style>

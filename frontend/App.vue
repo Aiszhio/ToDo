@@ -1,4 +1,3 @@
-
 <script>
 
 import home from './Components/HomePage.vue';
@@ -24,39 +23,15 @@ export default {
 
 <template>
   <div id="app">
-    <button class="but1" @click="loadReg()">
-      Регистрация
-    </button>
-    <button class="but2" @click="loadEnt()">
-      Вход
-    </button>
-    <button class="but3" @click="loadHome()">
-      Главная
-    </button>
+    <header class="header">
+      <button class="btn btn-primary" @click="loadReg">Регистрация</button>
+      <button class="btn btn-primary" @click="loadEnt">Вход</button>
+      <button class="btn btn-primary" @click="loadHome">Главная</button>
+    </header>
 
-  </div>
-  <router-view v-slot="{ Component }">
     <transition name="fade" mode="out-in">
-      <component :is="Component" />
+      <router-view class="layout-center" />
     </transition>
-  </router-view>
+  </div>
 </template>
 
-
-<style scoped>
-#app{
-  display: flex;
-  justify-content: right;
-  background-color: #FFDAB9;
-}
-</style>
-
-<style>
-fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
-</style>

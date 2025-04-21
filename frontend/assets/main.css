@@ -1,32 +1,72 @@
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#264653;background:#f8f9fa;line-height:1.45}
 
-*{
-    margin: 0;
-    padding: 0;
-}
+.layout-center{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:2rem;position:relative}
+.card{background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:2rem;width:100%;max-width:600px}
+.btn{display:block;width:100%;padding:1rem;border:none;border-radius:10px;font-weight:500;font-family:"Poppins",sans-serif;cursor:pointer;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,#74b9ff,#0984e3);color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(116,185,255,.25)}
+.input,textarea,input[type="date"]{width:100%;padding:1rem;border:2px solid #e0e0e0;border-radius:10px;font-size:1rem;background:#fdfdfd;margin-bottom:1rem;transition:.3s}
+.input:focus,textarea:focus,input[type="date"]:focus{border-color:#74b9ff;box-shadow:0 0 0 3px rgba(116,185,255,.25)}
+.text-center{text-align:center}
 
-main {
+/* ---------- PAGE 1  (Home / Menu) ---------- */
+main.layout-home{background:linear-gradient(135deg,#f8f9fa,#e9ecef)}
+.aside{background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-radius:20px;width:320px;min-height:400px;box-shadow:0 12px 40px rgba(0,0,0,.08);border:1px solid rgba(255,255,255,.4);margin-right:4rem;transition:transform .3s;display:flex;flex-direction:column;align-items:center}
+.aside:hover{transform:translateY(-6px)}
+.nav-list{width:100%;padding:2rem 1.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.nav-link{width:100%;padding:1rem;background:rgba(116,185,255,.1);border:2px solid rgba(116,185,255,.3);border-radius:12px;color:#2d3436;font-weight:500;text-align:center;cursor:pointer;transition:.3s}
+.nav-link:hover{background:rgba(116,185,255,.15);transform:translateX(6px);box-shadow:0 6px 18px rgba(116,185,255,.15)}
+.greet{font-family:"Playfair Display",serif;font-size:3rem;text-align:center;max-width:600px;padding:2rem;background:linear-gradient(45deg,#0984e3,#74b9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:fadeInUp .8s}
+
+/* ---------- PAGE 2  (Add Note) ---------- */
+.note-form{animation:floatIn .5s ease-out}
+.note-title{font-family:"Poppins",sans-serif;font-size:2rem;margin-bottom:1.5rem;background:linear-gradient(45deg,#0984e3,#74b9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center}
+.submit-btn{composes:btn btn-primary}
+
+/* ---------- PAGE 3 & 5  (Register / Login) ---------- */
+.auth-form,.form{gap:1rem}
+.title{font-family:"Poppins",sans-serif;font-size:2rem;margin-bottom:1rem;text-align:center;color:#2d3436}
+.error{color:#c00;text-align:center;margin-bottom:1rem}
+
+/* ---------- PAGE 4  (Account / Notes list) ---------- */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2rem;margin-top:2rem}
+.note-card{background:#fff;border-radius:12px;padding:1rem;box-shadow:0 4px 6px rgba(0,0,0,.05);display:flex;justify-content:space-between;align-items:flex-start;transition:.2s}
+.note-card:hover{background:#f8f9fa;box-shadow:0 4px 12px rgba(116,185,255,.15)}
+.note-card strong{display:block;color:#2d3436;font-size:1.1rem;margin-bottom:.3rem}
+.note-card p{font-size:.95rem;color:#636e72}
+.note-actions button{background:none;border:none;font-size:1.2rem;cursor:pointer;margin-left:.5rem}
+
+/* ---------- PAGE 6  (Help) ---------- */
+.help-section{background:#FFDAB9;border-radius:16px;padding:2rem;width:90%;max-width:800px;margin:auto}
+.help-box{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem;margin-bottom:1.5rem}
+.help-box h3{font-size:1.2rem;margin-bottom:.5rem;color:#555}
+
+/* ---------- Animations ---------- */
+@keyframes floatIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fade-enter-active,.fade-leave-active{transition:opacity .3s ease}
+.fade-enter-from,.fade-leave-to{opacity:0}
+
+@media(max-width:768px){.aside{margin:0 0 2rem 0;width:90%;max-width:400px}.greet{font-size:2.2rem}.notes-grid{grid-template-columns:1fr}.layout-center{padding:1rem}}
+@media(max-width:480px){.greet{font-size:1.8rem}.btn{padding:.8rem;font-size:1rem}}
+
+.header {
     display: flex;
-    flex-direction: row;
-    margin: 0;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(8px);
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.header .btn {
+    width: auto;
+    padding: 0.75rem 1.5rem;
 }
 
-.but1, .but2, .but3{
-    background-color: #FFDAB9;
-    color: black;
-    border: white;
-    font-size: large;
-    height: 8vh;
-    width: 25vh;
-    user-select: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.but1:hover, .but2:hover, .but3:hover{
-    opacity: .8;
-    text-decoration: none;
-    border-radius: 10px;
-    background-color: #edbc91;
-    font-weight: bolder;
-    transform: scale(0.95);
-}
